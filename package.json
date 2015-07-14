@@ -1,0 +1,21 @@
+{
+  "name": "auditorjs",
+  "version": "0.1.0",
+  "description": "A auditor for the project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alexander Lobashev",
+  "license": "MIT",
+  "dependencies": {
+    "async": "1.3.0",
+    "jscs": "1.13.1",
+    "jscs-jsdoc": "1.1.0",
+    "jshint": "2.8.0",
+    "stylint": "1.0.9"
+  },
+  "bin": {
+    "auditor": "./bin/auditor"
+  }
+}
