@@ -10,13 +10,13 @@ Coming soon
 var Auditor = require('auditorjs');
 
 new Auditor({
-      command: 'git diff --cached --name-only --diff-filter=ACMR',
-      "linters": {
-        "jscs": ["js"],
-        "stylint": ["styl"]
-      },
-      "plugins": "/path/to/plugins"
-    });
+    command: 'git diff --cached --name-only --diff-filter=ACMR',
+    "linters": {
+      "jscs": ["js"],
+      "stylint": ["styl"]
+    },
+    "plugins": "/path/to/plugins"
+  });
 ```
 
 ## Usage pre-commit
@@ -31,7 +31,7 @@ Config in package.json:
 {
     ...
     "auditor": {
-      command: 'git diff --cached --name-only --diff-filter=ACMR',
+      "command": "git diff --cached --name-only --diff-filter=ACMR",
       "linters": {
         "jscs": ["js"],
         "stylint": ["styl"]
