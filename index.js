@@ -66,10 +66,6 @@ Auditor.prototype.analyzing = function(error, stdout, stderr) {
         tasks = [];
 
     for (var type in this.auditors) {
-        if (!this.config.linters[type]) {
-            continue;
-        }
-
         var settings = {
             type: type,
             extensions: this.config.linters[type],
@@ -102,8 +98,10 @@ Auditor.prototype.plugins = function(path) {
     var that = this;
 
     fs.readdirSync(path).forEach(function(filename) {
-        if (filename !== 'index.js') {
-            that.auditors[filename.replace('.js', '')] = require(path + '/' + filename);
+        var type = filename.replace('.js', '');
+
+        if (filename !== 'index.js' && that.config.linters[type]) {
+            that.auditors[type] = require(path + '/' + filename);
         }
     });
 };
