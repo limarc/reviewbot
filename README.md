@@ -21,7 +21,8 @@ new Auditor({
 
 ## Usage pre-commit
 Create pre-commit hook
-```
+```bash
+cd .git/hooks
 ln -s ../../node_modules/auditorjs/bin/auditor pre-commit
 chmod +x pre-commit
 ```
