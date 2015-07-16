@@ -11,12 +11,12 @@ var Auditor = require('auditorjs');
 
 new Auditor({
     command: 'git diff --cached --name-only --diff-filter=ACMR',
-    "linters": {
-      "jscs": ["js"],
-      "stylint": ["styl"]
+    linters: {
+      jscs: ['js'],
+      stylint: ['styl']
     },
-    "plugins": "/path/to/plugins"
-  });
+    plugins: '/path/to/plugins'
+});
 ```
 
 ## Usage pre-commit
