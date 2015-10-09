@@ -3,20 +3,20 @@ The review bot for your repository
 
 ## Usage
 ```js
-var Reviewbot = require('reviewbot'),
-    rmyplugin = require('reviewbot-myplugin');
+var reviewbot = require('reviewbot'),
+    rjscs = require('reviewbot-jscs'),
+    rstylint = require('reviewbot-stylint');
 
-var reviewbot = new Reviewbot({
+var bot = new reviewbot({
     command: 'git diff --cached --name-only --diff-filter=ACMR',
     excludes: ['/node_modules', '/build'],
-    plugins: [
-        new Reviewbot.linters.rjscs(),
-        new Reviewbot.linters.rstyl(),
-        new rmyplugin()
+    linters: [
+        new rjscs(),
+        new rstylint()
     ]
 });
 
-reviewbot.lint();
+bot.review();
 ```
 
 ## Usage pre-commit
