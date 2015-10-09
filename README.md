@@ -1,44 +1,45 @@
-# Auditor.js
-A auditor for the project
-
-## CLI version
-Coming soon
+# Reviewbot
+The review bot for your repository
 
 ## Usage
+```js
+var Reviewbot = require('reviewbot'),
+    rmyplugin = require('reviewbot-myplugin');
 
-```javascript
-var Auditor = require('auditorjs');
-
-new Auditor({
+var reviewbot = new Reviewbot({
     command: 'git diff --cached --name-only --diff-filter=ACMR',
-    linters: {
-      jscs: ['js'],
-      stylint: ['styl']
-    },
-    plugins: '/path/to/plugins'
+    excludes: ['/node_modules', '/build'],
+    plugins: [
+        new Reviewbot.linters.rjscs(),
+        new Reviewbot.linters.rstyl(),
+        new rmyplugin()
+    ]
 });
+
+reviewbot.lint();
 ```
 
 ## Usage pre-commit
 Create pre-commit hook
 ```bash
 cd .git/hooks
-ln -s ../../node_modules/auditorjs/bin/auditor pre-commit
+ln -s ../../node_modules/reviewbot/bin/reviewbot pre-commit
 chmod +x pre-commit
 ```
 
-Config in package.json:
-```javascript
-{
-    ...
-    "auditor": {
-      "command": "git diff --cached --name-only --diff-filter=ACMR",
-      "linters": {
-        "jscs": ["js"],
-        "stylint": ["styl"]
-      },
-      "plugins": "/path/to/plugins"
-    }
-}
+Config in reviewbot.config.js:
+```js
+var reviewbot = require('reviewbot'),
+    rjscs = require('reviewbot-jscs'),
+    rstylint = require('reviewbot-stylint');
+
+module.exports = {
+    command: 'git diff --cached --name-only --diff-filter=ACMR',
+    excludes: ['/node_modules', '/build'],
+    linters: [
+        new rjscs(),
+        new rstylint()
+    ]
+};
 ```
 

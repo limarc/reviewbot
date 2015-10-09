@@ -1,52 +1,51 @@
 #!/usr/bin/env node
 'use strict';
-
 var fs = require('fs'),
-    async = require('async'),
-    child = require('child_process');
+    child = require('child_process'),
+    async = require('async');
 
 /**
- * Auditor
+ * Reviewbot
+ *
  * @param {Object} config The config
  */
-var Auditor = function(config) {
+var Reviewbot = function(config) {
     this.config = {
         command: 'git diff --cached --name-only --diff-filter=ACMR',
-        linters: {
-            jscs: ['js'],
-            jshint: ['js'],
-            stylint: ['styl']
-        },
-        plugins: false
+        excludes: ['/node_modules'],
+        linters: []
     };
 
-    this.auditors = {};
-
-    // Configure
     this.configure(config);
-    this.configure(require(process.cwd() + '/package.json').scripts.auditor);
 
-    // Loading plugins
-    this.plugins(__dirname + '/src/auditors');
-
-    if (this.config.plugins) {
-        this.plugins(process.cwd() + '/' + this.config.plugins);
+    try {
+        if (fs.statSync(process.cwd() + '/reviewbot.config.js').isFile()) {
+            this.configure(require(process.cwd() + '/reviewbot.config.js'));
+        }
+    } catch (e) {
+        console.log(e.message);
+        this.signal(1);
     }
-
-    // Get filelist by exec command
-    child.exec(this.config.command, this.analyzing.bind(this));
 };
 
 /**
  * Merge config
+ *
  * @param {Object} config The config
  */
-Auditor.prototype.configure = function(config) {
+Reviewbot.prototype.configure = function(config) {
     if (config && config.constructor === Object) {
         for (var type in config) {
             this.config[type] = config[type];
         }
     }
+};
+
+/**
+ * Review
+ */
+Reviewbot.prototype.review = function() {
+    child.exec(this.config.command, this.analyzing.bind(this));
 };
 
 /**
@@ -56,54 +55,48 @@ Auditor.prototype.configure = function(config) {
  * @param {Buffer} stdout Result
  * @param {Buffer} stderr Error
  */
-Auditor.prototype.analyzing = function(error, stdout, stderr) {
+Reviewbot.prototype.analyzing = function(error, stdout, stderr) {
     if (error !== null) {
-        throw new Error('The auditor.js is failed: ' + error);
+        throw new Error('The reviewbot is failed: ' + error);
     }
 
-    var that = this,
-        files = String(stdout).trim().split('\n'),
-        tasks = [];
+    var that = this;
+    var tasks = [];
 
-    for (var type in this.auditors) {
-        var settings = {
-            type: type,
-            extensions: this.config.linters[type],
+    var files = String(stdout).trim().split('\n').reduce(function(result, filename) {
+        var status = that.config.excludes.some(function(pattern) {
+            return filename.indexOf(pattern) !== -1;
+        });
+
+        if (!status) {
+            result.push(filename);
+        }
+
+        return result;
+    }, []);
+
+    (this.config.linters || []).forEach(function(linter) {
+        var params = {
+            type: linter.type,
             time: new Date().getTime()
         };
 
         var task = function(callback) {
-            that.auditors[this.settings.type](this.files, this.settings, function(report) {
-                callback(null, { type: this.settings.type, report: report, time: new Date().getTime() - this.settings.time });
+            this.review(this.files, this.params, function(report) {
+                callback(null, {
+                    type: this.params.type,
+                    report: report,
+                    time: new Date().getTime() - this.params.time
+                });
             }.bind(this));
         };
 
-        tasks.push(task.bind({ files: files, settings: settings }));
-    }
+        tasks.push(task.bind({ files: files, params: params, review: linter.review }));
+    });
 
     async.parallel(tasks, function(undefined, logs) {
-        that.exit(that.reporter(logs));
-    });
-};
-
-/**
- * Load `*.js` plugins in specified directory as properties
- * @param {string} path The path to directory
- */
-Auditor.prototype.plugins = function(path) {
-    if (!fs.existsSync(path)) {
-        return false;
-    }
-
-    var that = this;
-
-    fs.readdirSync(path).forEach(function(filename) {
-        var type = filename.replace('.js', '');
-
-        if (filename !== 'index.js' && that.config.linters[type]) {
-            that.auditors[type] = require(path + '/' + filename);
-        }
-    });
+        this.signal(this.reporter(logs));
+    }.bind(this));
 };
 
 /**
@@ -112,7 +105,7 @@ Auditor.prototype.plugins = function(path) {
  * @param {Object} type The collection logs
  * @returns The return status code
  */
-Auditor.prototype.reporter = function(logs) {
+Reviewbot.prototype.reporter = function(logs) {
     var signal = 0;
 
     logs.forEach(function(log) {
@@ -131,24 +124,25 @@ Auditor.prototype.reporter = function(logs) {
     });
 
     if (signal) {
-        console.log('\n  \x1b[33mThe checkout failed (if using git when add `--no-verify` to bypass)\x1b[0m');
+        console.log('\n  \x1b[33mThe review failed (if using git when add `--no-verify` to bypass)\x1b[0m');
     }
 
     return signal;
 };
 
 /**
- * Flush exit
- * @see https://gist.github.com/3427357
+ * Signal
  */
-Auditor.prototype.exit = function(code) {
+Reviewbot.prototype.signal = function(code) {
+    var that = this;
+
     if (process.stdout._pendingWriteReqs || process.stderr._pendingWriteReqs) {
         process.nextTick(function() {
-            exit(code);
+            that.signal(code);
         });
     } else {
         process.exit(code);
     }
 };
 
-module.exports = Auditor;
+module.exports = Reviewbot;

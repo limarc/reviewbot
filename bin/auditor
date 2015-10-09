@@ -1,4 +1,0 @@
-#!/usr/bin/env node
-
-var Auditor = require('../index.js')
-new Auditor();
