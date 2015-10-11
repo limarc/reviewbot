@@ -85,22 +85,17 @@ Reviewbot.prototype.analyzing = function(error, stdout, stderr) {
     }, []);
 
     (this.config.linters || []).forEach(function(linter) {
-        var params = {
-            type: linter.type,
-            time: Date.now()
-        };
-
         var task = function(callback) {
-            this.review(this.files, this.params, function(report) {
+            this.review(this.files, function(report) {
                 callback(null, {
-                    type: this.params.type,
+                    type: this.type,
                     report: report,
-                    time: Date.now() - this.params.time
+                    time: Date.now() - this.time
                 });
             }.bind(this));
         };
 
-        tasks.push(task.bind({ files: files, params: params, review: linter.review }));
+        tasks.push(task.bind({ files: files, type: linter.type, time: Date.now(), review: linter.review }));
     });
 
     async.parallel(tasks, function(undefined, logs) {
