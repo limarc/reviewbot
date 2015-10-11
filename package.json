@@ -1,6 +1,6 @@
 {
   "name": "reviewbot",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "The review bot for the repository",
   "main": "index.js",
   "scripts": {
@@ -9,9 +9,14 @@
   "author": "Alexander Lobashev",
   "license": "MIT",
   "dependencies": {
-    "async": "1.3.0"
+    "async": "1.3.0",
+    "chalk": "1.1.1"
   },
   "bin": {
     "reviewbot": "./bin/reviewbot"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/limarc/reviewbot.git"
   }
 }

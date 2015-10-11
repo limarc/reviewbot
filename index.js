@@ -2,7 +2,8 @@
 'use strict';
 var fs = require('fs'),
     child = require('child_process'),
-    async = require('async');
+    async = require('async'),
+    chalk = require('chalk');
 
 /**
  * Reviewbot
@@ -113,23 +114,50 @@ Reviewbot.prototype.reporter = function(logs) {
     var signal = 0;
 
     logs.forEach(function(log) {
-        console.log('\n  \x1b[33mAnalyzing with ' + log.type + ':\x1b[0m ' +
-            (log.report.success ? '\x1b[32mOK\x1b[0m' : '\x1b[31m' + log.report.errors.length + ' FAILED\x1b[0m') + '' +
-            ', \x1b[35m' + log.time / 1000 + 's\x1b[0m'
+        console.log('  ' +
+            chalk.yellow('Analyzing with ' + log.type) + chalk.gray(': ') +
+            (log.report.success ? chalk.green('Ok') : chalk.red(log.report.errors.length + ' Failed')) + chalk.gray(', ') +
+            chalk.magenta(log.time / 1000 + 's')
         );
 
         if (!log.report.success) {
-            log.report.errors.forEach(function(error) {
-                console.log('    ' + error.filename + ' (' + error.line + ':' + error.column + ')' + ' > ' + error.message);
-            });
+            var group = log.report.errors.reduce(function(result, error) {
+                if (!result[error.filename]) {
+                    result[error.filename] = [];
+                }
+
+                result[error.filename].push(error);
+                return result;
+            }, {});
+
+            for (var name in group) {
+                if (!group.hasOwnProperty(name)) {
+                    continue;
+                }
+
+                console.log('    ' + chalk.underline(name));
+
+                group[name].forEach(function(error) {
+                    console.log(
+                        '      ' +
+                        error.message + '' +
+                        (error.rule ? ' [' + error.rule + ']' : '') +
+                        chalk.gray(', ' + error.line + ':' + error.column + '')
+                    );
+                });
+
+                console.log('');
+            }
 
             signal = 1;
         }
     });
 
     if (signal) {
-        console.log('\n  \x1b[33mThe review failed (if using git when add `--no-verify` to bypass)\x1b[0m');
+        console.log('  ' + chalk.yellow('The review failed (if using git when add `--no-verify` to bypass)'));
     }
+
+    console.log('');
 
     return signal;
 };
