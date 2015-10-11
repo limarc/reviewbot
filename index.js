@@ -16,16 +16,25 @@ var Reviewbot = function(config) {
         linters: []
     };
 
+    this.loadConfigFile();
     this.configure(config);
+};
+
+/**
+ * Load config from file
+ *
+ * @param {string} path The relative path to config
+ */
+Reviewbot.prototype.loadConfigFile = function(path) {
+    if (!path) {
+        path = process.cwd() + '/reviewbot.config.js';
+    }
 
     try {
-        if (fs.statSync(process.cwd() + '/reviewbot.config.js').isFile()) {
-            this.configure(require(process.cwd() + '/reviewbot.config.js'));
+        if (fs.statSync(path).isFile()) {
+            this.configure(require(path));
         }
-    } catch (e) {
-        console.log(e.message);
-        this.signal(1);
-    }
+    } catch (e) {}
 };
 
 /**
@@ -78,7 +87,7 @@ Reviewbot.prototype.analyzing = function(error, stdout, stderr) {
     (this.config.linters || []).forEach(function(linter) {
         var params = {
             type: linter.type,
-            time: new Date().getTime()
+            time: Date.now()
         };
 
         var task = function(callback) {
@@ -86,7 +95,7 @@ Reviewbot.prototype.analyzing = function(error, stdout, stderr) {
                 callback(null, {
                     type: this.params.type,
                     report: report,
-                    time: new Date().getTime() - this.params.time
+                    time: Date.now() - this.params.time
                 });
             }.bind(this));
         };

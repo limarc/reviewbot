@@ -11,8 +11,8 @@ var bot = new reviewbot({
     command: 'git diff --cached --name-only --diff-filter=ACMR',
     excludes: ['/node_modules', '/build'],
     linters: [
-        new rjscs(),
-        new rstylint()
+        new rjscs({ extensions: ['.js', '.es6'] }),
+        new rstylint({ extensions: ['.styl'] })
     ]
 });
 
@@ -29,16 +29,15 @@ chmod +x pre-commit
 
 Config in reviewbot.config.js:
 ```js
-var reviewbot = require('reviewbot'),
-    rjscs = require('reviewbot-jscs'),
+var rjscs = require('reviewbot-jscs'),
     rstylint = require('reviewbot-stylint');
 
 module.exports = {
     command: 'git diff --cached --name-only --diff-filter=ACMR',
     excludes: ['/node_modules', '/build'],
     linters: [
-        new rjscs(),
-        new rstylint()
+        new rjscs({ extensions: ['.js', '.es6'] }),
+        new rstylint({ extensions: ['.styl'] })
     ]
 };
 ```
