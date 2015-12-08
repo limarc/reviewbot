@@ -9,7 +9,7 @@ var fs = require('fs'),
 /**
  * Creating spinner
  */
-var spinner = new Spinner('running ReviewBot.. %s');
+var spinner = new Spinner('Running reviewbot.. %s');
 spinner.setSpinnerString('|/-\\');
 
 /**
@@ -23,7 +23,6 @@ var Reviewbot = function(config) {
         excludes: ['/node_modules'],
         linters: []
     };
-    spinner.start();
 
     this.loadConfigFile();
     this.configure(config);
@@ -63,7 +62,13 @@ Reviewbot.prototype.configure = function(config) {
  * Review
  */
 Reviewbot.prototype.review = function() {
-    child.exec(this.config.command, this.analyzing.bind(this));
+    var that = this;
+
+    spinner.start();
+    child.exec(that.config.command, function(error, stdout, stderr) {
+        spinner.stop(true);
+        that.analyzing(error, stdout, stderr);
+    });
 };
 
 /**
@@ -77,7 +82,7 @@ Reviewbot.prototype.analyzing = function(error, stdout, stderr) {
     if (error !== null) {
         throw new Error('The reviewbot is failed: ' + error);
     }
-    spinner.stop(true);
+
     var that = this;
     var tasks = [];
 
