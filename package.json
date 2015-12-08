@@ -1,6 +1,6 @@
 {
   "name": "reviewbot",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "The review bot for the repository",
   "main": "index.js",
   "scripts": {
