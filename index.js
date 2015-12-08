@@ -3,14 +3,7 @@
 var fs = require('fs'),
     child = require('child_process'),
     async = require('async'),
-    chalk = require('chalk'),
-    Spinner = require('cli-spinner').Spinner;
-
-/**
- * Creating spinner
- */
-var spinner = new Spinner('Running reviewbot.. %s');
-spinner.setSpinnerString('|/-\\');
+    chalk = require('chalk');
 
 /**
  * Reviewbot
@@ -62,13 +55,7 @@ Reviewbot.prototype.configure = function(config) {
  * Review
  */
 Reviewbot.prototype.review = function() {
-    var that = this;
-
-    spinner.start();
-    child.exec(that.config.command, function(error, stdout, stderr) {
-        spinner.stop(true);
-        that.analyzing(error, stdout, stderr);
-    });
+    child.exec(this.config.command, this.analyzing.bind(this));
 };
 
 /**
@@ -171,7 +158,6 @@ Reviewbot.prototype.reporter = function(logs) {
     }
 
     console.log('');
-
     return signal;
 };
 
