@@ -1,4 +1,4 @@
-# Reviewbot
+# Reviewbot [Deprecated]
 The review bot for your repository
 
 ## Usage
